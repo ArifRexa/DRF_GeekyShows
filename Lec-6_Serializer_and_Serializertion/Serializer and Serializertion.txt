@@ -1,0 +1,211 @@
+Python has a built in package called json, which is used to work with JSON data.
+
+dumps(data) - This is used to convert python object into json string.
+
+Example:
+To use json package First we have to import it.
+
+import json
+python_data = {'name': 'Sonam', 'roll':101 }
+json_data = json.dumps(python_data)
+print(json_data)
+{"name": "Sonam", "roll": 101} // in duble qutes means this is json data
+
+
+=============================================================================
+
+
+loads(data) - This is used to parse json string. 
+
+Example:
+import json
+json_data = {"name" "Sonam”, “roll” : 101}
+parsed_data = json.loads (json_data)
+print(parsed_data)
+{'name': 'Sonam', 'roll': 101}
+
+
+python => JSON = dumps
+
+JSON => python = loads
+
+==============================================================================
+
+                                    Serializers
+
+In Django REST Framework, serializers are responsible for converting complex data
+such as querysets and model instances to native Python datatypes (called serialization)
+that can then be easily rendered into JSON, XML or other content types which is
+understandable by Front End.
+
+Serializers are also responsible for deserialization which means it allows parsed data to
+be converted back into complex types, after first validating the incoming data.
+● Serialization
+● Deserialization
+
+
+
+==================================================================================
+
+                                Serializer Class
+
+A serializer class is very similar to a Django Form and ModelForm class, and includes
+similar validation flags on the various fields, such as required, max_length and default.
+
+DRF provides a Serializer class which gives you a powerful, generic way to control the
+output of your responses, as well as a ModelSerializer class which provides a useful
+shortcut for creating serializers that deal with model instances and querysets.
+
+=======================================================================================
+
+                How to Create Serializer Class
+● Create a separate seriealizers.py file to write all serializers
+
+from rest_framework import serializers
+
+class StudentSerializer(serializers.Serializer):
+    name = serializers.CharField(max_length=100)
+    roll = serializers. IntegerField()
+    city = serializers.CharField(max_length=100)
+
+
+======================================================================================
+
+        models.py
+
+from django.db import models
+
+class Student(models.Model): 
+    name = models.CharField(max_length=100) 
+    roll = models. IntegerField()
+    city = models.CharField(max_length=100)
+
+Run makemigrations and migrate command JSON Data
+
+ID NAME ROLL CITY
+1 Sonam 101 Ranchi
+2 Rahul 102 Ranchi
+3 Raj 103 Bokaro
+
+
+
+================================================================
+
+views.py
+--------
+
+def student_detail (request):
+    stu= Student.objects.get(id = 2)
+    # print (stu)
+    serializer = Student Serializer(stu)
+    #print (serializer)
+    # print (serializer.data)
+    json_data = JSONRenderer().render(serializer.data)
+    print(json_data)
+    return HttpResponse (json_data, content_type='application/json')
+
+urls.py
+-------
+
+from django.contrib import admin
+from django.urls import path
+from api import views
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('stuinfo/', views.student_detail),
+]
+
+
+
+
+----------------------------------------------------------------------
+
+views.py
+--------
+from django.shortcuts import render
+from .models import Student
+from .serializers import StudentSerializer
+from rest_framework.renderers import JSONRenderer
+from django.http import HttpResponse, JsonResponse
+
+
+def student_detail (request, pk):
+    stu= Student.objects.get(id = pk)
+    # print (stu)
+    serializer = Student Serializer(stu)
+    #print (serializer)
+    # print (serializer.data)
+    json_data = JSONRenderer().render(serializer.data)
+    print(json_data)
+    return HttpResponse (json_data, content_type='application/json')
+or
+    return JsonResponse (serializer.data)
+
+
+# Query Set All Student Data
+
+def student_list(request):
+    stu = Student.objects.all()
+    # print (stu)
+    serializer = StudentSerializer (stu, many=True)
+    # print (serializer)
+    # print (serializer.data)
+    json_data = JSONRenderer ().render (serializer.data)
+    # print (json_data)
+    return HttpResponse (json_data, content_type='application/json') or return JsonResponse (serializer.data, safe=False)
+
+
+urls.py
+-------
+
+from django.contrib import admin
+from django.urls import path
+from api import views
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('stuinfo/<int:pk>', views.student_detail),
+    path('all/', views.student_list),
+]
+
+
+
+
+models.py
+----------
+
+from django.db import models
+
+# Create your models here.
+
+class Student (models.Model):
+    name = models.CharField (max_length=100)
+    roll = models.IntegerField()
+    city = models.CharField (max_length=100)
+
+
+
+
+admin.py
+---------
+
+from django.contrib import admin
+from .models import Student
+
+
+# Register your models here.
+@admin.register (Student)
+class StudentAdmin (admin.ModelAdmin):
+    list_display = ['id', 'name', 'roll', 'city']
+
+
+
+
+serializers.py
+---------------
+
+from rest_framework import serializers
+
+class StudentSerializer (serializers.Serializer):
+    name = serializers.CharField(max_length=100)
+    roll = serializers.IntegerField()
+    city = serializers.CharField(max_length=100)

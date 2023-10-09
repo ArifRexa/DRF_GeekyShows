@@ -1,0 +1,7 @@
+1. pip install djangorestframework
+
+2. settings.py
+        INSTALLED_APPS = [
+            ...
+            'rest_framework'
+        ]
