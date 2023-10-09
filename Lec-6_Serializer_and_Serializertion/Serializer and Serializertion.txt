@@ -59,6 +59,7 @@ shortcut for creating serializers that deal with model instances and querysets.
 =======================================================================================
 
                 How to Create Serializer Class
+
 ● Create a separate seriealizers.py file to write all serializers
 
 from rest_framework import serializers
@@ -71,7 +72,8 @@ class StudentSerializer(serializers.Serializer):
 
 ======================================================================================
 
-        models.py
+models.py
+---------
 
 from django.db import models
 

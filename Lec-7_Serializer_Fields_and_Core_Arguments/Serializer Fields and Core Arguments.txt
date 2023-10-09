@@ -1,0 +1,65 @@
+Serializer Field
+----------------
+Serializer fields handle converting between primitive values and internal datatypes.
+They also deal with validating input values, as well as retrieving and setting the
+values from their parent objects.
+
+Syntax:
+
+from rest_framework import serializers
+serializers.Field_Name( )
+
+
+Example:
+
+from rest_framework import serializers
+serializers.CharField( )
+
+
+===========================================================================================================================
+
+CharField - A text representation. Optionally validates the text to be shorter than max_length and longer than min_length.
+
+Syntax:- CharField(max_length=None, min_length=None, allow_blank=False,trim_whitespace=True)
+
+● max_length - Validates that the input contains no more than this number of characters.
+
+● min_length - Validates that the input contains no fewer than this number of characters.
+
+● allow_blank - If set to True then the empty string should be considered a valid value. 
+If set to False then the empty string is considered invalid and will raise a validation error.
+Defaults to False.
+
+● trim_whitespace - If set to True then leading and trailing whitespace is trimmed. Defaults to
+True.
+
+● The allow_null option is also available for string fields, although its usage is discouraged in
+favor of allow blank.
+
+
+===========================================================================================================================
+
+Core Arguments
+---------------
+
+label - A short text string that may be used as the name of the field in HTML form fields or
+other descriptive elements.
+
+validators - A list of validator functions which should be applied to the incoming field input,
+and which either raise a validation error or simply return. Validator functions should typically
+raise serializers. ValidationError, but Django's built-in ValidationError is also supported for
+compatibility with validators defined in the Django codebase or third party Django packages.
+
+error_messages - A dictionary of error codes to error messages.
+help_text - A text string that may be used as a description of the field in HTML form fields or
+other descriptive elements.
+
+
+initial - A value that should be used for pre-populating the value of HTML form fields.
+style - A dictionary of key-value pairs that can be used to control how renderers should render
+the field.
+
+Example:
+password = serializers.CharField(
+    max_length=100,
+    style={'input_type': 'password', 'placeholder': 'Password"})
