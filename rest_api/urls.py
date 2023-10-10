@@ -3,6 +3,7 @@ from django.urls import path
 from api import views
 from DeSerialization_and_Insert_Data import views as deView
 from CRUD_Api import views as CView
+from validation_class_view import views as vcView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -11,4 +12,5 @@ urlpatterns = [
     path('all/', views.student_list),
     path('stucreate/', deView.student_create),
     path('stuapi/', CView.student_api),
+    path('stuapi2/', vcView.StudentAPI.as_view()),
 ]

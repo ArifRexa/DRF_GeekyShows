@@ -40,7 +40,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'api',
     'DeSerialization_and_Insert_Data',
-    'CRUD_Api'
+    'CRUD_Api',
+    'validation_class_view'
 ]
 
 MIDDLEWARE = [
