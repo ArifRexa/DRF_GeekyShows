@@ -1,0 +1,588 @@
+Update data
+------------
+
+from rest framework import serializers
+
+class StudentSerializer(serializers.Serializer):
+    name = serializers.CharField(max length=100)
+    roll = serializers.IntegerFieldO
+    city = serializers.CharField(max length=100)
+    def update(self, instance, validated_data):
+        instance.name = validated_data.get('name', instance.name)
+        instance.roll = validated_data.get(roll', instance.roll)
+        instance.city = validated_data.get(city', instance.city)
+        instance.save
+        return instance
+
+
+NB:
+    instance = old data
+    validated_data = new data
+
+============================================================================================================================
+
+Complete Update Data
+--------------------
+By default, serializers must be passed values for all required fields or they
+will raise validation errors.
+Required All Data from Front End/Client
+
+
+serializer = StudentSerializer(stu, data=pythondata)
+if serializer.is_valid():
+    serializer.save()
+============================================================================================================================
+
+Partial Update Data
+-------------------
+Partial Update - All Data not required
+
+
+serializer = StudentSerializer(stu, data pythondata, partial- True)
+if serializer.is valid():
+    serializer.save()
+
+
+=============================================================================================================================
+=================================================== CRUD Operations =========================================================
+=============================================================================================================================
+
+
+================ READ Opetaions ===============
+
+------------------------------------------------------------------------------------------------------------------------------------------------------
+models.py
+------------------------------------------------------------------------------------------------------------------------------------------------------
+
+from django.db import models
+
+# Create your models here.
+
+class Student3(models.Model):
+    name = models.CharField (max_length=100)
+    roll = models.IntegerField()
+    city = models.CharField (max_length=100)
+
+------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+------------------------------------------------------------------------------------------------------------------------------------------------------
+admin.py
+------------------------------------------------------------------------------------------------------------------------------------------------------
+
+from django.contrib import admin
+from .models import Student3
+# Register your models here.
+
+@admin.register (Student3)
+class StudentAdmin (admin.ModelAdmin) :
+    list_display = ['id', 'name','roll', 'city']
+
+------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+------------------------------------------------------------------------------------------------------------------------------------------------------
+serializers.py
+------------------------------------------------------------------------------------------------------------------------------------------------------
+
+from rest_framework import serializers
+
+
+class StudentSerializer (serializers.Serializer):
+    name = serializers.CharField(max_length=100)
+    roll = serializers.IntegerField()
+    city = serializers.CharField(max_length=100)
+
+------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+------------------------------------------------------------------------------------------------------------------------------------------------------
+views.py
+------------------------------------------------------------------------------------------------------------------------------------------------------
+
+from django.shortcuts import render
+import io
+from rest_framework.parsers import JSONParser
+from .models import Student3
+from .serializers import StudentSerializer
+from rest_framework.renderers import JSONRenderer
+from django.http import HttpResponse
+
+def student_api(request) :
+    if request.method == 'GET':
+        json_data = request.body
+        stream = io.BytesIO(json_data)
+        pythondata = JSONParser ().parse(stream)
+        id = pythondata.get ('id', None)
+        if id is not None:
+            stu = Student3.objects.get(id=id)
+            serializer = StudentSerializer (stu)
+            json_data = JSONRenderer().render(serializer .data)
+            return HttpResponse(json_data, content_type='application/json')
+        
+        stu = Student3.objects.all()
+        serializer = StudentSerializer(stu, many=True)
+        json_data = JSONRenderer().render(serializer.data)
+        return HttpResponse(json_data, content_type= 'application/json')
+
+------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+------------------------------------------------------------------------------------------------------------------------------------------------------
+urls.py
+------------------------------------------------------------------------------------------------------------------------------------------------------
+
+from django.contrib import admin
+from django.urls import path
+...
+from CRUD_Api import views as CView
+
+urlpatterns = [
+    ...
+    path('stuapi/', CView.student_api),
+]
+
+------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+------------------------------------------------------------------------------------------------------------------------------------------------------
+myapp.py
+------------------------------------------------------------------------------------------------------------------------------------------------------
+
+import requests
+import json
+URL = "http://127.0.0.1:8000/stuapi/"
+def get_data(id = None):
+    data = {}
+    if id is not None:
+        data = {'id':id}
+    json_data = json.dumps(data)
+    r = requests.get(url = URL, data = json_data)
+    data = r.json()
+    print (data)
+
+get_data(2) 
+get_data() 
+
+------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+================ Create Opetaions ===============
+
+------------------------------------------------------------------------------------------------------------------------------------------------------
+serializers.py
+------------------------------------------------------------------------------------------------------------------------------------------------------
+
+in serializers.py we add these lines in the class
+
+def create(self, validated_data):
+    return Student3.objects.create(**validated_data)
+
+so the final code is: 
+
+
+from rest_framework import serializers
+from .models import Student3
+
+
+class StudentSerializer (serializers.Serializer):
+    name = serializers.CharField(max_length=100)
+    roll = serializers.IntegerField()
+    city = serializers.CharField(max_length=100)
+
+    def create(self, validated_data):
+        return Student3.objects.create(**validated_data)
+
+------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+------------------------------------------------------------------------------------------------------------------------------------------------------
+views.py
+------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+in views.py we should add this conditions for post method
+
+
+if request.method =='POST':
+    json_data = request.body
+    stream = io.BytesIO(json_data)
+    pythondata = JSONParser () .parse (stream)
+    serializer = StudentSerializer (data = pythondata)
+    if serializer.is_valid():
+        serializer. save()
+        res = {'msg': 'Data Created'}
+        json_data = JSONRenderer().render(res)
+        return HttpResponse(json_data, content_type="application/json")
+    json_data = JSONRenderer().render(serializer.errors)
+    return HttpResponse (json_data, content_type="application/json")
+
+
+
+
+
+so the final code is: 
+
+
+
+from django.shortcuts import render
+import io
+from rest_framework.parsers import JSONParser
+from .models import Student3
+from .serializers import StudentSerializer
+from rest_framework.renderers import JSONRenderer
+from django.http import HttpResponse
+from django.views.decorators.csrf import csrf_exempt
+
+@csrf_exempt
+def student_api(request) :
+    if request.method == 'GET':
+        json_data = request.body
+        stream = io.BytesIO(json_data)
+        pythondata = JSONParser ().parse(stream)
+        id = pythondata.get ('id', None)
+        if id is not None:
+            stu = Student3.objects.get(id=id)
+            serializer = StudentSerializer (stu)
+            json_data = JSONRenderer().render(serializer .data)
+            return HttpResponse(json_data, content_type='application/json')
+        
+        stu = Student3.objects.all()
+        serializer = StudentSerializer(stu, many=True)
+        json_data = JSONRenderer().render(serializer.data)
+        return HttpResponse(json_data, content_type= 'application/json')
+    
+
+    if request.method =='POST':
+        json_data = request.body
+        stream = io.BytesIO(json_data)
+        pythondata = JSONParser () .parse (stream)
+        serializer = StudentSerializer (data = pythondata)
+        if serializer.is_valid():
+            serializer. save()
+            res = {'msg': 'Data Created'}
+            json_data = JSONRenderer().render(res)
+            return HttpResponse(json_data, content_type="application/json")
+        json_data = JSONRenderer().render(serializer.errors)
+        return HttpResponse (json_data, content_type="application/json")
+
+------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+------------------------------------------------------------------------------------------------------------------------------------------------------
+myapp.py
+------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Just add these lines
+
+
+def post_data():
+    data = {
+    'name': 'Ravi',
+    'roll': 104,
+    'city': 'Dhanbad'
+    }
+    json_data = json. dumps (data)
+    r = requests.post (url = URL, data = json_data)
+    data = r.json()
+    print (data)
+post_data ()
+
+
+So the final code is :
+
+
+# ----- Read Operations -----
+import requests
+import json
+URL = "http://127.0.0.1:8000/stuapi/"
+def get_data(id = None):
+    data = {}
+    if id is not None:
+        data = {'id':id}
+    json_data = json.dumps(data)
+    r = requests.get(url = URL, data = json_data)
+    data = r.json()
+    print (data)
+
+# get_data(2)
+
+
+# ----- Create Operations -----
+def post_data():
+    data = {
+    'name': 'Ravi',
+    'roll': 104,
+    'city': 'Dhanbad'
+    }
+    json_data = json. dumps (data)
+    r = requests.post (url = URL, data = json_data)
+    data = r.json()
+    print (data)
+post_data ()
+
+------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+================ Update Opetaions ===============
+
+------------------------------------------------------------------------------------------------------------------------------------------------------
+serializers.py
+------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+Just added these lines
+
+def update(self, instance, validated_data):
+    print (instance.name)
+    instance.name = validated_data.get ('name', instance.name)
+    print(instance.name)
+    instance.roll = validated_data.get ('roll', instance.roll)
+    instance.city = validated_data.get('city', instance.city)
+    instance.save ()
+    return instance
+
+
+SO,
+
+
+from rest_framework import serializers
+from .models import Student3
+
+
+class StudentSerializer (serializers.Serializer):
+    name = serializers.CharField(max_length=100)
+    roll = serializers.IntegerField()
+    city = serializers.CharField(max_length=100)
+
+    def create(self, validated_data):
+        return Student3.objects.create(**validated_data)
+    
+
+    def update(self, instance, validated_data):
+        print (instance.name)
+        instance.name = validated_data.get ('name', instance.name)
+        print(instance.name)
+        instance.roll = validated_data.get ('roll', instance.roll)
+        instance.city = validated_data.get('city', instance.city)
+        instance.save ()
+        return instance
+
+------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+------------------------------------------------------------------------------------------------------------------------------------------------------
+views.py
+------------------------------------------------------------------------------------------------------------------------------------------------------
+
+New lines are:
+
+if request .method == "PUT":
+    json_data = request.body
+    stream = io.BytesIO(json_data)
+    pythondata = JSONParser ().parse (stream)
+    id = pythondata.get ('id')
+    stu = Student3.objects.get(id=id)
+    serializer = StudentSerializer (stu, data=pythondata,partial=True)
+    if serializer.is_valid():
+        serializer.save ()
+        res = {'msg' : 'Data Updated !!'}
+        json_data = JSONRenderer() .render (res)
+        return HttpResponse (json_data, content_type= 'application/ison')
+    json_data = JSONRenderer().render(serializer.errors)
+    return HttpResponse (json_data, content_type="application/json")
+
+
+So,
+
+from django.shortcuts import render
+import io
+from rest_framework.parsers import JSONParser
+from .models import Student3
+from .serializers import StudentSerializer
+from rest_framework.renderers import JSONRenderer
+from django.http import HttpResponse
+from django.views.decorators.csrf import csrf_exempt
+
+@csrf_exempt
+def student_api(request) :
+    if request.method == 'GET':
+        json_data = request.body
+        stream = io.BytesIO(json_data)
+        pythondata = JSONParser ().parse(stream)
+        id = pythondata.get ('id', None)
+        if id is not None:
+            stu = Student3.objects.get(id=id)
+            serializer = StudentSerializer (stu)
+            json_data = JSONRenderer().render(serializer .data)
+            return HttpResponse(json_data, content_type='application/json')
+        
+        stu = Student3.objects.all()
+        serializer = StudentSerializer(stu, many=True)
+        json_data = JSONRenderer().render(serializer.data)
+        return HttpResponse(json_data, content_type= 'application/json')
+    
+
+    if request.method =='POST':
+        json_data = request.body
+        stream = io.BytesIO(json_data)
+        pythondata = JSONParser () .parse (stream)
+        serializer = StudentSerializer (data = pythondata)
+        if serializer.is_valid():
+            serializer. save()
+            res = {'msg': 'Data Created'}
+            json_data = JSONRenderer().render(res)
+            return HttpResponse(json_data, content_type="application/json")
+        json_data = JSONRenderer().render(serializer.errors)
+        return HttpResponse (json_data, content_type="application/json")
+    
+
+    if request .method == "PUT":
+        json_data = request.body
+        stream = io.BytesIO(json_data)
+        pythondata = JSONParser ().parse (stream)
+        id = pythondata.get ('id')
+        stu = Student3.objects.get(id=id)
+        serializer = StudentSerializer (stu, data=pythondata,partial=True)
+        if serializer.is_valid():
+            serializer.save ()
+            res = {'msg' : 'Data Updated !!'}
+            json_data = JSONRenderer() .render (res)
+            return HttpResponse (json_data, content_type= 'application/ison')
+        json_data = JSONRenderer().render(serializer.errors)
+        return HttpResponse (json_data, content_type="application/json")
+
+------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+------------------------------------------------------------------------------------------------------------------------------------------------------
+myapp.py
+------------------------------------------------------------------------------------------------------------------------------------------------------
+
+For update just add these lines of code
+
+# ----------- Update Operations -----------
+
+def update_data() :
+    data = {
+    'id': 4,
+    'name': 'Rohit',
+    'city': 'Ranchi'
+    }
+    json_data = json.dumps (data)
+    r = requests.put (url = URL, data = json_data)
+    data = r.json()
+    print (data)
+update_data()
+
+So, 
+
+
+# ---------- Read Operations ----------
+import requests
+import json
+URL = "http://127.0.0.1:8000/stuapi/"
+def get_data(id = None):
+    data = {}
+    if id is not None:
+        data = {'id':id}
+    json_data = json.dumps(data)
+    r = requests.get(url = URL, data = json_data)
+    data = r.json()
+    print (data)
+
+# get_data(2)
+
+
+# ---------- Create Operations ----------
+def post_data():
+    data = {
+    'name': 'Ravi',
+    'roll': 104,
+    'city': 'Dhanbad'
+    }
+    json_data = json. dumps (data)
+    r = requests.post (url = URL, data = json_data)
+    data = r.json()
+    print (data)
+# post_data ()
+
+
+# ---------- Update Operations ----------
+
+def update_data() :
+    data = {
+    'id': 4,
+    'name': 'Rohit',
+    'city': 'Ranchi'
+    }
+    json_data = json.dumps (data)
+    r = requests.put (url = URL, data = json_data)
+    data = r.json()
+    print (data)
+update_data()
+------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+================ Delete Opetaions ===============
+------------------------------------------------------------------------------------------------------------------------------------------------------
+myapp.py
+------------------------------------------------------------------------------------------------------------------------------------------------------
+
+def delete_data():
+    data = { 'id': 4}
+    json_data = json.dumps (data)
+    r = requests.delete(url = URL, data = json_data)
+    data = r.json()
+    print (data)
+delete_data()
+
+
+------------------------------------------------------------------------------------------------------------------------------------------------------
+views.py
+------------------------------------------------------------------------------------------------------------------------------------------------------
+
+if request.method == 'DELETE' :
+    json_data = request.body
+    stream = io.BytesIO(json_data)
+    pythondata = JSONParser ().parse(stream)
+    id = pythondata.get('id')
+    stu = Student3.objects.get(id=id)
+    stu.delete()
+    res = {'msg': 'Data Deleted!!'}
+    json_data = JSONRenderer () . render (res)
+    return HttpResponse (json_data, content_type= 'application/json')

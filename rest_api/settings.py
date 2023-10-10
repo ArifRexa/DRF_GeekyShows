@@ -39,7 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'api',
-    'DeSerialization_and_Insert_Data'
+    'DeSerialization_and_Insert_Data',
+    'CRUD_Api'
 ]
 
 MIDDLEWARE = [
