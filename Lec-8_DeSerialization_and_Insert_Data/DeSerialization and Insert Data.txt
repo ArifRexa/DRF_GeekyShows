@@ -1,0 +1,217 @@
+De-serialization
+----------------
+
+Serializers are also responsible for deserialization which means it allows
+parsed data to be converted back into complex types, after first validating the
+incoming data.
+
+Complex Data Type =================> Python Native Data Type =====================> Json Data
+                    Serialization                               Render into Json
+
+
+Json Data ====================> Python Native DataType ========================> Complex DataType
+                Parse Data                                  De-Serialization
+
+
+==================================================================================================================================================
+==================================================================================================================================================
+
+BytesIO()
+---------
+
+A stream implementation using an in-memory bytes buffer. It inherits
+BufferedIOBase. The buffer is discarded when the close method is called.
+
+import io
+stream = io.BytesIO(json_data)
+
+
+
+JSONParser()
+------------
+
+This is used to parse json data to python native data type.
+from rest_framework.parsers import JSON arser
+parsed_data = JSONParser().parse(stream)
+
+
+
+
+
+De-serialization
+-----------------
+
+Deserialization allows parsed data to be converted back into complex types,
+after first validating the incoming data.
+
+Creating Serializer Object
+
+serializer = StudentSerializer(data = parsed data)
+
+Validated Data
+serializer.is_valid()
+serializer.validated_data
+serializer.errors
+
+
+=============================================================================================================
+
+Create Data/Insert Data
+------------------------
+
+from rest framework import serializers
+
+class StudentSerializer(serializers.Serializer):
+    name = serializers.CharField(max_length=100)
+    roll = serializers.IntegerField()
+    city = serializers.CharField(max_length=100)
+
+    def create(self, validate_data):
+    return Student.objects.create(**validate data)
+
+======================================================================================================================================================
+=====================================================     De-serialization Total Process with Code     ===============================================
+======================================================================================================================================================
+
+
+
+
+
+
+------------------------------------------------------------------------------------------------------------------------------------------------------
+models.py
+------------------------------------------------------------------------------------------------------------------------------------------------------
+from django.db import models
+
+# Create your models here.
+
+class Student2(models.Model):
+    name = models.CharField (max_length=100)
+    roll = models.IntegerField()
+    city = models.CharField (max_length=100)
+------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+------------------------------------------------------------------------------------------------------------------------------------------------------
+admin.py
+------------------------------------------------------------------------------------------------------------------------------------------------------
+
+from django.contrib import admin
+from .models import Student2
+# Register your models here.
+
+@admin.register (Student2)
+class StudentAdmin (admin.ModelAdmin) :
+    list_display = ['id', 'name','roll', 'city']
+
+------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+------------------------------------------------------------------------------------------------------------------------------------------------------
+serializers.py
+------------------------------------------------------------------------------------------------------------------------------------------------------
+
+from rest_framework import serializers
+from .models import Student2
+
+
+class StudentSerializer (serializers .Serializer):
+    name = serializers. CharField(max_length=100)
+    roll = serializers.IntegerField()
+    city = serializers.CharField (max_length=100)
+
+    def create(self, validate_data) :
+        return Student2.objects.create(**validate_data)
+
+------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+------------------------------------------------------------------------------------------------------------------------------------------------------
+views.py
+------------------------------------------------------------------------------------------------------------------------------------------------------
+
+from django. shortcuts import render
+import io
+from rest_framework.parsers import JSONParser
+from .serializers import StudentSerializer
+from rest_framework.renderers import JSONRenderer
+from django.http import HttpResponse
+from django.views.decorators.csrf import csrf_exempt
+# Create your views here.
+
+@csrf_exempt
+def student_create(request):
+    if request.method =='POST':
+        json_data = request.body
+        stream = io.BytesIO(json_data)
+        pythondata = JSONParser () .parse (stream)
+        serializer = StudentSerializer(data=pythondata)
+        if serializer.is_valid():
+            serializer.save()
+            res = {'msg': 'Data Created' }
+            json_data = JSONRenderer ().render(res)
+            return HttpResponse (json_data, content_type='application/json')
+        json_data = JSONRenderer ().render(serializer.errors)
+        return HttpResponse (json_data, content_type='application/json')
+------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+------------------------------------------------------------------------------------------------------------------------------------------------------
+urls.py
+------------------------------------------------------------------------------------------------------------------------------------------------------
+
+from django.contrib import admin
+from django.urls import path
+from api import views
+from DeSerialization_and_Insert_Data import views as deView
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    # path('student_info/', views.student_detail),
+    path('student_info/<int:pk>', views.student_detail),
+    path('all/', views.student_list),
+    path('stucreate/', deView.student_create)
+]
+------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+------------------------------------------------------------------------------------------------------------------------------------------------------
+myapp.py
+------------------------------------------------------------------------------------------------------------------------------------------------------
+
+import requests
+import json
+URL = "http://127.0.0.1:8000/stucreate/"
+
+data = {
+    'name': 'Sonam',
+    'roll': 101,
+    'city': 'Ranchi'
+}
+
+json_data = json.dumps (data)
+r = requests.post (url = URL, data = json_data)
+data = r.json()
+print (data)
+
+------------------------------------------------------------------------------------------------------------------------------------------------------

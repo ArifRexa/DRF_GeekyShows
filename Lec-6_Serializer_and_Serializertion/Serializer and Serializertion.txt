@@ -211,3 +211,148 @@ class StudentSerializer (serializers.Serializer):
     name = serializers.CharField(max_length=100)
     roll = serializers.IntegerField()
     city = serializers.CharField(max_length=100)
+
+
+
+
+======================================================================================================================================================
+=====================================================     Serialization Total Process with Code     ==================================================
+======================================================================================================================================================
+
+
+
+
+
+
+------------------------------------------------------------------------------------------------------------------------------------------------------
+models.py
+------------------------------------------------------------------------------------------------------------------------------------------------------
+from django.db import models
+
+# Create your models here.
+
+class Student(models.Model):
+    name = models.CharField (max_length=100)
+    roll = models.IntegerField()
+    city = models.CharField (max_length=100)
+
+------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+------------------------------------------------------------------------------------------------------------------------------------------------------
+admin.py
+------------------------------------------------------------------------------------------------------------------------------------------------------
+
+from django.contrib import admin
+from .models import Student
+
+# Register your models here.
+@admin.register (Student)
+class StudentAdmin (admin.ModelAdmin):
+    list_display = ['id', 'name', 'roll', 'city']
+
+------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+------------------------------------------------------------------------------------------------------------------------------------------------------
+serializers.py
+------------------------------------------------------------------------------------------------------------------------------------------------------
+
+from rest_framework import serializers
+
+
+class StudentSerializer (serializers.Serializer):
+    name = serializers.CharField(max_length=100)
+    roll = serializers.IntegerField()
+    city = serializers.CharField(max_length=100)
+
+------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+------------------------------------------------------------------------------------------------------------------------------------------------------
+views.py
+------------------------------------------------------------------------------------------------------------------------------------------------------
+
+from django.shortcuts import render
+from .models import Student
+from .serializers import StudentSerializer
+from rest_framework.renderers import JSONRenderer
+from django.http import HttpResponse, JsonResponse
+
+# Create your views here.
+
+# Model Object - Single Student Data
+def student_detail (request, pk):
+    stu = Student.objects.get(id = pk)
+    serializer = StudentSerializer (stu)
+    # json_data = JSONRenderer ().render(serializer.data)
+    # return HttpResponse (json_data, content_type='application/json')
+    return JsonResponse (serializer.data)
+
+
+# Query Set All Student Data
+
+def student_list(request):
+    stu = Student.objects.all()
+    # print (stu)
+    serializer = StudentSerializer (stu, many=True)
+    # print (serializer)
+    # print (serializer.data)
+    json_data = JSONRenderer ().render (serializer.data)
+    # print (json_data)
+    return JsonResponse (serializer.data, safe=False)
+    # return HttpResponse (json_data, content_type='application/json')
+
+------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+------------------------------------------------------------------------------------------------------------------------------------------------------
+urls.py
+------------------------------------------------------------------------------------------------------------------------------------------------------
+
+from django.contrib import admin
+from django.urls import path
+from api import views
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    # path('student_info/', views.student_detail),
+    path('student_info/<int:pk>', views.student_detail),
+    path('all/', views.student_list),
+]
+
+------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+------------------------------------------------------------------------------------------------------------------------------------------------------
+myapp.py
+------------------------------------------------------------------------------------------------------------------------------------------------------
+
+import requests
+URL = "http://127.0.0.1:8000/student_info/2"
+r = requests.get(url = URL)
+data = r.json()
+print ( type( data))
+print ( data)
+
+------------------------------------------------------------------------------------------------------------------------------------------------------
